@@ -1,23 +1,19 @@
-<div class="container-fluid mt-5" >
-    <h4>Marvel Series</h4>
-    <div class="row">
-      <div
-        class="col-lg-3 mt-3 mb-3"
-        *ngFor="let c of allSeries"
-      >
-        <div class="card">
-          <img src="{{c.thumbnail.path +'/standard_medium.'+c.thumbnail.extension}}" width="100%" class="card-img-top" alt="Some Issue Loading Image..." />
-          <div class="card-body">
-            <h5 class="card-title">{{ c.title}}</h5>
-  
-          </div>
+<div class="container-fluid mt-4">
+  <h4>Marvel Series</h4>
+  <p class="text-muted" *ngIf="isLoading">Loading series...</p>
+  <p class="text-danger" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="row">
+    <div class="col-lg-3 mt-3 mb-3" *ngFor="let c of allSeries">
+      <div class="card h-100">
+        <img [src]="imageUrl(c.thumbnail.path, c.thumbnail.extension)" class="card-img-top" alt="Series image" />
+        <div class="card-body">
+          <h5 class="card-title">{{ c.title }}</h5>
         </div>
-  
-  
-  
-  
       </div>
     </div>
-  
+    <div class="col-12" *ngIf="!isLoading && !errorMessage && allSeries.length === 0">
+      <p class="text-muted">No series available.</p>
+    </div>
   </div>
-  
+</div>

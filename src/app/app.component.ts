@@ -1,23 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-
-// declare var color: any;
-declare var x: any;
-declare function doFirst(x: any): any;
-
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit{
-    title = 'MARVELAPIIntegration';
-    ngOnInit(): void {
-      doFirst(x);
-      // new x();
-      // new color();
+export class AppComponent {
+  appName = 'Marvel API Explorer';
+  animationEnabled = false;
 
-    }
-    
-    // title1 = 'app-js';
+  toggleAnimation(): void {
+    this.animationEnabled = !this.animationEnabled;
   }
+}

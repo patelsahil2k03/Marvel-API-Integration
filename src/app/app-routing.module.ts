@@ -5,15 +5,14 @@ import { ComicsComponent } from './comics/comics.component';
 import { SeriesComponent } from './series/series.component';
 
 const routes: Routes = [
-
-  {path:'',component:AllCharactersComponent},
-  {path:'comics',component:ComicsComponent},
-  {path:'series',component:SeriesComponent}
-
+  { path: '', component: AllCharactersComponent },
+  { path: 'comics', component: ComicsComponent },
+  { path: 'series', component: SeriesComponent },
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

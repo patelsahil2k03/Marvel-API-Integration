@@ -1,127 +1,98 @@
-<div class="container-fluid mt-5">
-  <div class="row">
+<div class="container-fluid mt-4">
+  <div class="row mb-3">
     <div class="col-lg-6">
+      <h4 class="mb-0">Marvel Characters</h4>
+    </div>
+    <div class="col-lg-6">
+      <input
+        class="form-control"
+        type="text"
+        placeholder="Search by exact character name"
+        (keyup)="findCharacter($event)"
+      />
+    </div>
+  </div>
 
+  <p class="text-muted" *ngIf="isLoading">Loading characters...</p>
+  <p class="text-muted" *ngIf="isSearchLoading">Searching character...</p>
+  <p class="text-danger" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="row" *ngIf="!showSearchResult">
+    <div class="col-lg-3 mt-3 mb-3" *ngFor="let character of allCharacters">
+      <div class="card h-100">
+        <img [src]="imageUrl(character.thumbnail.path, character.thumbnail.extension)" class="card-img-top" alt="Character image" />
+        <div class="card-body">
+          <h5 class="card-title">{{ character.name }}</h5>
+          <button type="button" (click)="fetchComicsByCharacter(character.id)" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target=".comics-modal">Comics</button>
+          <button type="button" (click)="fetchSeriesByCharacter(character.id)" class="btn btn-outline-secondary" data-toggle="modal" data-target=".series-modal">Series</button>
+        </div>
+      </div>
     </div>
-    <div class="col-lg-3">
-      <input class="form-control mr-sm-2" type="text"
-      required name='characterName' id='characterName'
-      placeholder="Search" aria-label="Search" (keyup)="findCharacter($event)">
+  </div>
+
+  <div class="row" *ngIf="showSearchResult">
+    <div class="col-lg-3 mt-3 mb-3" *ngFor="let character of searchedCharacter">
+      <div class="card h-100">
+        <img [src]="imageUrl(character.thumbnail.path, character.thumbnail.extension)" class="card-img-top" alt="Character image" />
+        <div class="card-body">
+          <h5 class="card-title">{{ character.name }}</h5>
+        </div>
+      </div>
     </div>
-    <div class="col-lg-3">
+    <div class="col-12" *ngIf="searchedCharacter.length === 0 && !isSearchLoading">
+      <p class="text-muted">No character found for this name.</p>
     </div>
   </div>
 </div>
 
-  <div class="container-fluid mt-5" *ngIf="!showSearchResult">
-  <h4>Marvel Characters</h4>
-  <div class="row">
-    <div
-      class="col-lg-3 mt-3 mb-3"
-      *ngFor="let characters of allCharacters"
-    >
-      <div class="card">
-        <img src="{{characters.thumbnail.path +'/standard_medium.'+characters.thumbnail.extension}}" width="100%" class="card-img-top" alt="Some Issue Loading Image..." />
-        <div class="card-body">
-          <h5 class="card-title">{{ characters.name }}</h5>
-          <button type="button" (click)="fetchComicsByCharacter(characters.id)" class="btn btn-outline-primary  mr-4" data-toggle="modal" data-target=".bd-example-modal-lg">Comics</button>
-          <button type="button" (click)="fetchSeriesByCharacter(characters.id)" class="btn btn-outline-secondary" data-toggle="modal" data-target=".cd-example-modal-lg">Series</button>
-  
-        </div>
+<div class="modal fade comics-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Comics</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-  
-  
-  
-  
+      <div class="modal-body">
+        <div class="row" *ngIf="showComicsDiv">
+          <div class="col-lg-3 mt-3 mb-3" *ngFor="let comic of comics">
+            <div class="card h-100">
+              <img [src]="imageUrl(comic.thumbnail.path, comic.thumbnail.extension)" class="card-img-top" alt="Comic image" />
+              <div class="card-body">
+                <h5 class="card-title">{{ comic.title }}</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!showComicsDiv" class="text-muted">No comics found for this character.</p>
+      </div>
     </div>
   </div>
-  
-  </div>
-  
+</div>
 
-  <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Comics</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="container">
-            <div class="row" *ngIf='showComicsDiv'>
-              <div
-                class="col-lg-3 mt-3 mb-3"
-                *ngFor="let c of comics"
-              >
-                <div class="card">
-                  <img src="{{c.thumbnail.path +'/standard_medium.'+c.thumbnail.extension}}" width="100%" class="card-img-top" alt="Some Issue Loading Image..." />
-                  <div class="card-body">
-                    <h5 class="card-title">{{ c.title }}</h5>
-                  </div>
-                </div>
-    
+<div class="modal fade series-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Series</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row" *ngIf="showSeriesDiv">
+          <div class="col-lg-3 mt-3 mb-3" *ngFor="let s of series">
+            <div class="card h-100">
+              <img [src]="imageUrl(s.thumbnail.path, s.thumbnail.extension)" class="card-img-top" alt="Series image" />
+              <div class="card-body">
+                <h5 class="card-title">{{ s.title }}</h5>
               </div>
             </div>
-    
-            <div *ngIf='!showComicsDiv'>
-              <h4> No Comics For this Character </h4>
-            </div>
           </div>
-    
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-    
-        </div>
-    
+        <p *ngIf="!showSeriesDiv" class="text-muted">No series found for this character.</p>
       </div>
     </div>
-    </div>
-    
-    
-    
-    <div class="modal fade cd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Series</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="container">
-            <div class="row" *ngIf='showSeriesDiv'>
-              <div
-                class="col-lg-3 mt-3 mb-3"
-                *ngFor="let c of series"
-              >
-                <div class="card">
-                  <img src="{{c.thumbnail.path +'/standard_medium.'+c.thumbnail.extension}}" width="100%" class="card-img-top" alt="Some Issue Loading Image..." />
-                  <div class="card-body">
-                    <h5 class="card-title">{{ c.title }}</h5>
-                  </div>
-                </div>
-    
-              </div>
-            </div>
-    
-    
-            <div *ngIf='!showSeriesDiv'>
-              <h4> No Series For this Character </h4>
-            </div>
-          </div>
-    
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-    
-        </div>
-    
-      </div>
-    </div>
-    </div>
-  
-  
+  </div>
+</div>

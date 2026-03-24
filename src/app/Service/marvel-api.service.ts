@@ -1,55 +1,104 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
+export interface MarvelImage {
+  path: string;
+  extension: string;
+}
+
+export interface MarvelCharacter {
+  id: number;
+  name: string;
+  thumbnail: MarvelImage;
+}
+
+export interface MarvelComic {
+  id: number;
+  title: string;
+  thumbnail: MarvelImage;
+}
+
+export interface MarvelSeries {
+  id: number;
+  title: string;
+  thumbnail: MarvelImage;
+}
+
+export interface MarvelApiResponse<T> {
+  data: {
+    count: number;
+    results: T[];
+  };
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MarvelAPIService {
+  private readonly baseUrl = environment.marvel.baseUrl;
 
-  constructor(private http:HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  BaseUrl = 'https://gateway.marvel.com:443/v1/public/characters?limit=10&ts=1&apikey=45a77c7e9de3d8d1446b50769dee7f5a&hash=632179a0bd14baf648c14a8641117fdb';
+  private authParams(extra: Record<string, string> = {}): HttpParams {
+    let params = new HttpParams()
+      .set('ts', environment.marvel.ts)
+      .set('apikey', environment.marvel.publicKey)
+      .set('hash', environment.marvel.hash);
 
+    Object.entries(extra).forEach(([key, value]) => {
+      params = params.set(key, value);
+    });
 
-  allCharacters():Observable<any>{
-    return this.http.get(this.BaseUrl);
+    return params;
   }
 
-
-  allComics():Observable<any>
-  {
-    const comicUrl ='https://gateway.marvel.com:443/v1/public/comics?limit=10&ts=1&apikey=45a77c7e9de3d8d1446b50769dee7f5a&hash=632179a0bd14baf648c14a8641117fdb';
-    ;
-    return this.http.get(comicUrl);
+  private ensureConfigured(): void {
+    if (!environment.marvel.publicKey || !environment.marvel.hash) {
+      throw new Error('Marvel API credentials are missing. Configure environment files before running requests.');
+    }
   }
 
-
-  allSeries():Observable<any>
-  {
-    const seriesUrl ='https://gateway.marvel.com:443/v1/public/series?limit=10&ts=1&apikey=45a77c7e9de3d8d1446b50769dee7f5a&hash=632179a0bd14baf648c14a8641117fdb';
-    ;
-    return this.http.get(seriesUrl);
+  allCharacters(): Observable<MarvelApiResponse<MarvelCharacter>> {
+    this.ensureConfigured();
+    return this.http.get<MarvelApiResponse<MarvelCharacter>>(`${this.baseUrl}/characters`, {
+      params: this.authParams({ limit: String(environment.marvel.defaultLimit) }),
+    });
   }
 
-
-  getComicsByCharacter(characterId:string):Observable<any>
-  {
-    const comicByCharacterUrl = 'https://gateway.marvel.com:443/v1/public/characters/${characterId}/comics?ts=1&apikey=45a77c7e9de3d8d1446b50769dee7f5a&hash=00bce3801f14372275f5a6bbd6a88408';
-    return this.http.get(comicByCharacterUrl);
+  allComics(): Observable<MarvelApiResponse<MarvelComic>> {
+    this.ensureConfigured();
+    return this.http.get<MarvelApiResponse<MarvelComic>>(`${this.baseUrl}/comics`, {
+      params: this.authParams({ limit: String(environment.marvel.defaultLimit) }),
+    });
   }
 
-  getSeriesByCharacter(characterId:string):Observable<any>
-  {
-    const seriesByCharacterUrl = 'https://gateway.marvel.com:443/v1/public/characters/${characterId}/series?ts=1&apikey=45a77c7e9de3d8d1446b50769dee7f5a&hash=00bce3801f14372275f5a6bbd6a88408';
-    return this.http.get(seriesByCharacterUrl);
+  allSeries(): Observable<MarvelApiResponse<MarvelSeries>> {
+    this.ensureConfigured();
+    return this.http.get<MarvelApiResponse<MarvelSeries>>(`${this.baseUrl}/series`, {
+      params: this.authParams({ limit: String(environment.marvel.defaultLimit) }),
+    });
   }
 
-  getCharacterByName(characterName:string):Observable<any>
-  {
-    const characterBYNameUrl = 'https://gateway.marvel.com:443/v1/public/characters?name=${characterName}&ts=1&apikey=45a77c7e9de3d8d1446b50769dee7f5a&hash=632179a0bd14baf648c14a8641117fdb';
-    return this.http.get(characterBYNameUrl);
+  getComicsByCharacter(characterId: number): Observable<MarvelApiResponse<MarvelComic>> {
+    this.ensureConfigured();
+    return this.http.get<MarvelApiResponse<MarvelComic>>(`${this.baseUrl}/characters/${characterId}/comics`, {
+      params: this.authParams(),
+    });
   }
 
+  getSeriesByCharacter(characterId: number): Observable<MarvelApiResponse<MarvelSeries>> {
+    this.ensureConfigured();
+    return this.http.get<MarvelApiResponse<MarvelSeries>>(`${this.baseUrl}/characters/${characterId}/series`, {
+      params: this.authParams(),
+    });
+  }
+
+  getCharacterByName(characterName: string): Observable<MarvelApiResponse<MarvelCharacter>> {
+    this.ensureConfigured();
+    return this.http.get<MarvelApiResponse<MarvelCharacter>>(`${this.baseUrl}/characters`, {
+      params: this.authParams({ name: characterName.trim() }),
+    });
+  }
 }
